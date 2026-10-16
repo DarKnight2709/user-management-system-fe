@@ -80,6 +80,8 @@ Feature health không có request body nên không cần schema form. LoginForm,
 - `/admin`: dashboard quản trị với tổng người dùng thực tế từ API và lối tắt quản lý/giám sát.
 - `/user/profile`: hồ sơ, avatar và tự xóa tài khoản.
 - `/user/security`: đổi mật khẩu, refresh phiên và đăng xuất tất cả.
+- `/organization`: trang tổ chức của tôi, có nút “+ Tạo tổ chức” phía trên dẫn đến `/organization/create`. Đường dẫn cũ `/user/organizations` chuyển hướng về đây. Backend hiện chưa có API danh sách tổ chức tham gia, nên trang hiển thị trạng thái chưa khả dụng thay vì danh sách giả hoặc kết luận người dùng chưa tham gia tổ chức nào.
+- `/organization/create`: form tạo tổ chức qua `POST /organizations`, yêu cầu tên 1–100 ký tự và slug duy nhất 3–63 ký tự, chuẩn hóa trim/lowercase đúng DTO backend. Có trạng thái đang tạo, lỗi API và thông báo thành công; tạo xong chuyển về `/organization`.
 - `/admin/users`: quản lý danh sách người dùng, phân trang và xóa tài khoản.
 - `/admin/users/:id`: xem hồ sơ người dùng bằng `GET /users/:id`, yêu cầu `USER:read`. Mở bằng nút “Xem hồ sơ” trong danh sách admin; hiển thị avatar, thông tin cá nhân và thời gian tạo/cập nhật, không có chức năng sửa tài khoản người khác.
 - `/admin/health`: trạng thái hệ thống trong layout admin. `/health` vẫn là trang kiểm tra kết nối công khai.

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { UserRound, ShieldCheck, ArrowUpRight } from "lucide-react";
+import { UserRound, ShieldCheck, ArrowUpRight, Building2 } from "lucide-react";
 import { useMe } from "@/features/auth/api/auth.api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorNotice } from "@/components/feedback";
@@ -34,6 +34,12 @@ export function UserDashboard() {
       </section>
       <div className="grid gap-5 sm:grid-cols-2">
         {[
+          {
+            to: "/organization",
+            title: "Tổ chức",
+            description: "Xem các tổ chức bạn tham gia và tạo tổ chức mới.",
+            icon: Building2,
+          },
           {
             to: "/user/profile",
             title: "Hồ sơ của tôi",

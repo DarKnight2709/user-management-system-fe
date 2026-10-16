@@ -7,6 +7,7 @@ import {
   LogOut,
   PanelsTopLeft,
   LayoutDashboard,
+  Building2,
 } from "lucide-react";
 import { useLogout, useMe, endSession } from "@/features/auth/api/auth.api";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ export function AppLayout({ area }: { area: "admin" | "user" }) {
       ]
     : [
         { to: "/user", label: "Dashboard cá nhân", icon: LayoutDashboard },
+        { to: "/organization", label: "Tổ chức", icon: Building2 },
         { to: "/user/profile", label: "Hồ sơ cá nhân", icon: UserRound },
         { to: "/user/security", label: "Bảo mật", icon: ShieldCheck },
       ];

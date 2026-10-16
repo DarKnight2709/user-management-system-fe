@@ -17,6 +17,8 @@ import { ErrorNotice } from "@/components/feedback";
 import { AccessRoute } from "./access-routes";
 import { AdminDashboard } from "@/features/dashboard/components/admin-dashboard";
 import { UserDashboard } from "@/features/dashboard/components/user-dashboard";
+import { OrganizationsPage } from "@/features/organizations/components/organizations-page";
+import { CreateOrganizationPage } from "@/features/organizations/components/create-organization-page";
 function ProtectedRoute({ admin = false }: { admin?: boolean }) {
   const current = useSession();
   if (!current || (current.portal || "user") !== (admin ? "admin" : "user"))
@@ -56,6 +58,13 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute />,
         children: [
           {
+            element: <AppLayout area="user" />,
+            children: [
+              { path: "/organization", element: <OrganizationsPage /> },
+              { path: "/organization/create", element: <CreateOrganizationPage /> },
+            ],
+          },
+          {
             path: "/profile",
             element: <Navigate to="/user/profile" replace />,
           },
@@ -69,6 +78,10 @@ export const router = createBrowserRouter([
             element: <AppLayout area="user" />,
             children: [
               { index: true, element: <UserDashboard /> },
+              {
+                path: "organizations",
+                element: <Navigate to="/organization" replace />,
+              },
               { path: "profile", element: <ProfilePage /> },
               { path: "security", element: <SecurityPage /> },
             ],
