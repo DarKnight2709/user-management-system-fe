@@ -1,9 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import type { ApiResponse } from "@/types/api";
-import type { User, UpdateUserInput, AvatarResponse } from "../types";
+import type {
+  User,
+  UpdateUserInput,
+  AvatarResponse,
+  PaginatedUsers,
+} from "../types";
 export const usersApi = {
-  list: async () => (await api.get<ApiResponse<User[]>>("/users")).data.data,
+  list: async (page = 1, limit = 20) =>
+    (
+      await api.get<ApiResponse<PaginatedUsers>>("/users", {
+        params: { page, limit },
+      })
+    ).data.data,
   get: async (id: string) =>
     (await api.get<ApiResponse<User>>(`/users/${id}`)).data.data,
   update: async (input: UpdateUserInput) =>
@@ -18,8 +28,11 @@ export const usersApi = {
       .data.data;
   },
 };
-export function useUsers() {
-  return useQuery({ queryKey: ["users", "list"], queryFn: usersApi.list });
+export function useUsers(page = 1) {
+  return useQuery({
+    queryKey: ["users", "list", page],
+    queryFn: () => usersApi.list(page),
+  });
 }
 export function useUser(id: string) {
   return useQuery({ queryKey: ["users", id], queryFn: () => usersApi.get(id) });

@@ -10,11 +10,24 @@ import { AuthPage } from "@/features/auth/components/auth-page";
 import { SecurityPage } from "@/features/auth/components/security-page";
 import { ProfilePage } from "@/features/users/components/profile-page";
 import { UsersPage } from "@/features/users/components/users-page";
+import { UserProfilePage } from "@/features/users/components/user-profile-page";
 import { HealthPage } from "@/features/health/components/health-page";
 import { AppLayout } from "./app-layout";
 import { ErrorNotice } from "@/components/feedback";
-function ProtectedRoute() {
-  return useSession() ? <Outlet /> : <Navigate to="/login" replace />;
+import { AccessRoute } from "./access-routes";
+import { AdminDashboard } from "@/features/dashboard/components/admin-dashboard";
+import { UserDashboard } from "@/features/dashboard/components/user-dashboard";
+function ProtectedRoute({ admin = false }: { admin?: boolean }) {
+  const current = useSession();
+  if (!current || (current.portal || "user") !== (admin ? "admin" : "user"))
+    return <Navigate to={admin ? "/admin/login" : "/login"} replace />;
+  return <Outlet />;
+}
+function HomeRoute() {
+  const current = useSession();
+  return (
+    <Navigate to={current?.portal === "admin" ? "/admin" : "/user"} replace />
+  );
 }
 function RouteError() {
   return (
@@ -28,8 +41,12 @@ export const router = createBrowserRouter([
   {
     errorElement: <RouteError />,
     children: [
-      { path: "/", element: <Navigate to="/profile" replace /> },
       { path: "/login", element: <AuthPage key="login" mode="login" /> },
+      {
+        path: "/admin/login",
+        element: <AuthPage key="admin-login" mode="login" portal="admin" />,
+      },
+      { path: "/", element: <HomeRoute /> },
       {
         path: "/register",
         element: <AuthPage key="register" mode="register" />,
@@ -39,11 +56,43 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute />,
         children: [
           {
-            element: <AppLayout />,
+            path: "/profile",
+            element: <Navigate to="/user/profile" replace />,
+          },
+          {
+            path: "/security",
+            element: <Navigate to="/user/security" replace />,
+          },
+          { path: "/users", element: <Navigate to="/admin/users" replace /> },
+          {
+            path: "/user",
+            element: <AppLayout area="user" />,
             children: [
-              { path: "/profile", element: <ProfilePage /> },
-              { path: "/users", element: <UsersPage /> },
-              { path: "/security", element: <SecurityPage /> },
+              { index: true, element: <UserDashboard /> },
+              { path: "profile", element: <ProfilePage /> },
+              { path: "security", element: <SecurityPage /> },
+            ],
+          },
+        ],
+      },
+      {
+        element: <ProtectedRoute admin />,
+        children: [
+          {
+            element: <AccessRoute />,
+            children: [
+              {
+                path: "/admin",
+                element: <AppLayout area="admin" />,
+                children: [
+                  { index: true, element: <AdminDashboard /> },
+                  { path: "users", element: <UsersPage /> },
+                  { path: "users/:id", element: <UserProfilePage /> },
+                  { path: "health", element: <HealthPage /> },
+                  { path: "profile", element: <ProfilePage /> },
+                  { path: "security", element: <SecurityPage /> },
+                ],
+              },
             ],
           },
         ],

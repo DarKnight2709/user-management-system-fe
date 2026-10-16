@@ -21,8 +21,9 @@ export function refreshSession(): Promise<Session> {
     .then(({ data }) => {
       if (session.get() !== original)
         throw new Error("Phiên đăng nhập đã thay đổi.");
-      session.set(data.data);
-      return data.data;
+      const tokens = { ...data.data, portal: original.portal };
+      session.set(tokens);
+      return tokens;
     })
     .catch((error: unknown) => {
       if (session.get() === original) session.set(null);
@@ -60,7 +61,9 @@ api.interceptors.response.use(
     const latest = session.get();
     if (!latest) throw error;
     if (retried) {
-      if (request.headers.get("Authorization") === `Bearer ${latest.accessToken}`)
+      if (
+        request.headers.get("Authorization") === `Bearer ${latest.accessToken}`
+      )
         session.set(null);
       throw error;
     }

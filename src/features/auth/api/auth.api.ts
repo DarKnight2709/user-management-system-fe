@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import { api, refreshSession } from "@/lib/axios";
 import { session } from "@/lib/session";
 import { queryClient } from "@/lib/query-client";
@@ -30,9 +31,38 @@ export function endSession() {
   session.set(null);
   queryClient.clear();
 }
-export function useLogin() {
+export function useLogin(portal: "admin" | "user" = "user") {
   return useMutation({
-    mutationFn: authApi.login,
+    mutationFn: async (input: LoginInput) => {
+      const tokens = await authApi.login(input);
+      if (portal === "admin") {
+        const config = {
+          baseURL: api.defaults.baseURL,
+          timeout: 15000,
+          headers: { Authorization: `Bearer ${tokens.accessToken}` },
+        };
+        try {
+          await axios.get("/users", {
+            ...config,
+            params: { page: 1, limit: 1 },
+          });
+        } catch (error: unknown) {
+          try {
+            await axios.post(
+              "/auth/logout",
+              { refreshToken: tokens.refreshToken },
+              config,
+            );
+          } catch {}
+          if (axios.isAxiosError(error) && error.response?.status === 403)
+            throw new Error(
+              "Tài khoản này không có quyền đăng nhập trang quản trị.",
+            );
+          throw error;
+        }
+      }
+      return { ...tokens, portal };
+    },
     onSuccess: (tokens) => {
       queryClient.clear();
       session.set(tokens);

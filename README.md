@@ -1,4 +1,4 @@
-# User Management Client
+# Project management
 
 Client đơn giản cho backend `../user-management-system`, sử dụng React + Vite + TypeScript strict, TanStack Query v5, Tailwind CSS v4, shadcn/ui (Radix), React Hook Form + Zod và React Router v7 (đáp ứng v6+).
 
@@ -70,7 +70,22 @@ Feature health không có request body nên không cần schema form. LoginForm,
 | `/users`         | `GET /users`, `DELETE /users/:id`                                                                  |
 | `/health`        | `GET /`, `GET /health/live`, `GET /health/ready`                                                   |
 
-Backend chưa expose API quản lý organization, role và permission, nên client chỉ triển khai các endpoint đang có. `GET /users` cần quyền platform `USER:read`; xóa người khác cần `USER:delete`. Backend là nơi quyết định quyền; frontend hiển thị lỗi 403, không suy đoán quyền từ username. `GET /users/:id` chỉ cho đọc chính mình, vì vậy danh sách admin không có chức năng mở/sửa hồ sơ người khác. Backend bảo vệ quản trị viên cuối cùng và sẽ trả 409 khi cần.
+`GET /users` cần quyền platform `USER:read`; xóa người khác cần `USER:delete`. Backend là nơi quyết định quyền; frontend hiển thị lỗi 403, không suy đoán quyền từ username. API danh sách hiện trả `{ items, total, page, limit }`; client dùng phân trang 20 người/trang và tìm kiếm trong trang đang xem. Backend cho phép đọc hồ sơ người khác với quyền `USER:read`; sửa hồ sơ vẫn là thao tác của chính người đăng nhập.
+
+## Khu vực người dùng và admin
+
+- `/login`: màn đăng nhập người dùng, dẫn đến dashboard cá nhân tại `/user`, kể cả khi tài khoản có quyền quản trị.
+- `/admin/login`: màn đăng nhập quản trị riêng, kiểm tra quyền `USER:read` trước khi chấp nhận phiên và dẫn đến dashboard tổng quan tại `/admin`. Không có đăng ký admin công khai.
+- `/user`: dashboard cá nhân với thông tin tài khoản và lối tắt hồ sơ/bảo mật.
+- `/admin`: dashboard quản trị với tổng người dùng thực tế từ API và lối tắt quản lý/giám sát.
+- `/user/profile`: hồ sơ, avatar và tự xóa tài khoản.
+- `/user/security`: đổi mật khẩu, refresh phiên và đăng xuất tất cả.
+- `/admin/users`: quản lý danh sách người dùng, phân trang và xóa tài khoản.
+- `/admin/users/:id`: xem hồ sơ người dùng bằng `GET /users/:id`, yêu cầu `USER:read`. Mở bằng nút “Xem hồ sơ” trong danh sách admin; hiển thị avatar, thông tin cá nhân và thời gian tạo/cập nhật, không có chức năng sửa tài khoản người khác.
+- `/admin/health`: trạng thái hệ thống trong layout admin. `/health` vẫn là trang kiểm tra kết nối công khai.
+- Menu admin: Dashboard quản trị, Quản lý người dùng, Trạng thái API, Hồ sơ quản trị viên, Bảo mật. Menu người dùng: Dashboard cá nhân, Hồ sơ cá nhân, Bảo mật.
+- Hai cổng có luồng điều hướng riêng: truy cập route chưa đăng nhập đưa về đúng màn login; đăng xuất admin trở về `/admin/login`, người dùng trở về `/login`. Muốn đổi cổng cần đăng nhập ở màn tương ứng. Mỗi tab trình duyệt giữ một phiên đang hoạt động; đăng nhập cổng khác thay thế phiên cục bộ. `/` trở về dashboard của cổng đang đăng nhập. URL cũ `/profile`, `/security`, `/users` vẫn có chuyển hướng.
+- Session `/auth/me` chưa cung cấp role/permissions. Client kiểm tra quyền admin bằng `GET /users?page=1&limit=1` ở bước đăng nhập và tại route admin, chỉ coi 403 là không có quyền; lỗi mạng/server có giao diện thử lại. Thuộc tính `portal` trong session chỉ điều khiển giao diện, được giữ khi refresh token; backend tiếp tục xác thực và kiểm tra quyền trên từng request, bao gồm quyền xóa riêng biệt.
 
 ## Auth và xử lý lỗi
 
@@ -87,7 +102,7 @@ Backend chưa expose API quản lý organization, role và permission, nên clie
 1. Vào `/health`, xác nhận API và database hoạt động.
 2. Đăng ký tài khoản, đăng nhập, tải lại trang, sửa hồ sơ và upload JPEG.
 3. Làm mới phiên, đổi mật khẩu rồi đăng nhập bằng mật khẩu mới.
-4. Với tài khoản có quyền phù hợp, tìm/xóa người dùng ở `/users`; tài khoản thường nhận thông báo thiếu quyền.
+4. Đăng nhập ở `/admin/login` bằng tài khoản có `USER:read`, kiểm tra dashboard `/admin`, tìm/xóa người dùng ở `/admin/users`; tài khoản thường phải bị từ chối ở cổng admin.
 5. Kiểm tra đăng xuất hiện tại, đăng xuất tất cả, tự xóa tài khoản và lỗi khi backend dừng.
 
 Chưa thực hiện xác minh end-to-end với backend đang chạy hoặc tài khoản thật; build thành công chỉ xác nhận TypeScript và bundling.

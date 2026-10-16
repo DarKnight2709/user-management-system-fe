@@ -5,6 +5,7 @@ import type { Session } from "@/types/session";
 const schema = z.object({
   accessToken: z.string().min(1),
   refreshToken: z.string().min(1),
+  portal: z.enum(["admin", "user"]).optional(),
 });
 const key = "ums.session";
 const listeners = new Set<() => void>();

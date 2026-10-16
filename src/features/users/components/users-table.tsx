@@ -1,5 +1,7 @@
 import type { User } from "../types";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 export function UsersTable({
   users,
   pending,
@@ -44,12 +46,17 @@ export function UsersTable({
                 {new Date(user.createdAt).toLocaleDateString("vi-VN")}
               </td>
               <td className="px-5 py-4">
-                <ConfirmDialog
-                  title="Xóa"
-                  description={`Xác nhận xóa tài khoản ${user.email}? Backend kiểm tra quyền USER:delete và bảo vệ quản trị viên cuối cùng.`}
-                  pending={pending}
-                  onConfirm={() => onDelete(user.id)}
-                />
+                <div className="flex items-center gap-2 whitespace-nowrap">
+                  <Button asChild variant="outline">
+                    <Link to={`/admin/users/${user.id}`}>Xem hồ sơ</Link>
+                  </Button>
+                  <ConfirmDialog
+                    title="Xóa"
+                    description={`Xác nhận xóa tài khoản ${user.email}? Backend kiểm tra quyền USER:delete và bảo vệ quản trị viên cuối cùng.`}
+                    pending={pending}
+                    onConfirm={() => onDelete(user.id)}
+                  />
+                </div>
               </td>
             </tr>
           ))}

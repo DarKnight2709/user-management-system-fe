@@ -2,6 +2,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { PanelsTopLeft } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { useLogin, useRegister } from "../api/auth.api";
 import { registerSchema } from "../schemas/auth.schema";
@@ -10,32 +11,42 @@ import { LoginForm } from "./login-form";
 import { FormFields } from "@/components/form-fields";
 import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@/components/feedback";
-export function AuthPage({ mode }: { mode: "login" | "register" }) {
+export function AuthPage({
+  mode,
+  portal = "user",
+}: {
+  mode: "login" | "register";
+  portal?: "admin" | "user";
+}) {
+  const admin = portal === "admin";
+  const destination = admin ? "/admin" : "/user";
   const current = useSession();
-  const login = useLogin();
+  const login = useLogin(portal);
   const signup = useRegister();
   const navigate = useNavigate();
   const form = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
   });
-  if (current) return <Navigate to="/profile" replace />;
+  if (current && (current.portal || "user") === portal)
+    return <Navigate to={destination} replace />;
   return (
     <div className="mx-auto grid min-h-screen max-w-6xl items-center gap-12 px-6 py-12 lg:grid-cols-2">
       <section>
-        <div className="mb-8 inline-flex rounded-xl bg-indigo-600 p-3 text-xl font-bold text-white">
-          UM
+        <div className="mb-8 inline-flex rounded-xl bg-indigo-600 p-3 text-white">
+          <PanelsTopLeft size={28} strokeWidth={1.8} aria-hidden="true" />
         </div>
         <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-indigo-600">
-          User Management
+          Project management
         </p>
         <h1 className="text-4xl font-semibold leading-tight tracking-tight lg:text-5xl">
-          Tài khoản của bạn.
+          {admin ? "Không gian quản trị." : "Không gian của bạn."}
           <br />
-          Mọi thứ trong tầm tay.
+          {admin ? "Vận hành trong tầm tay." : "Bắt đầu ngày làm việc."}
         </h1>
         <p className="mt-5 max-w-sm leading-7 text-slate-500">
-          Quản lý hồ sơ, bảo mật tài khoản và kết nối với hệ thống trên một giao
-          diện đơn giản.
+          {admin
+            ? "Dành cho quản trị viên: theo dõi hệ thống và quản lý người dùng tại một nơi."
+            : "Đăng nhập để truy cập dashboard cá nhân, cập nhật hồ sơ và bảo mật tài khoản."}
         </p>
         <Link
           to="/health"
@@ -46,7 +57,11 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
       </section>
       <section className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm sm:p-10">
         <h2 className="text-2xl font-semibold">
-          {mode === "login" ? "Chào mừng trở lại" : "Tạo tài khoản"}
+          {admin
+            ? "Đăng nhập quản trị viên"
+            : mode === "login"
+              ? "Đăng nhập người dùng"
+              : "Tạo tài khoản"}
         </h2>
         <p className="mb-7 mt-2 text-sm text-slate-500">
           {mode === "login"
@@ -60,7 +75,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
               onSubmit={async (input) => {
                 try {
                   await login.mutateAsync(input);
-                  navigate("/profile", { replace: true });
+                  navigate(destination, { replace: true });
                 } catch {
                   return;
                 }
@@ -119,15 +134,24 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
             {signup.isError && <ErrorNotice error={signup.error} />}
           </form>
         )}
-        <p className="mt-6 text-center text-sm text-slate-500">
-          {mode === "login" ? "Chưa có tài khoản? " : "Đã có tài khoản? "}
-          <Link
-            className="font-medium text-indigo-600"
-            to={mode === "login" ? "/register" : "/login"}
-          >
-            {mode === "login" ? "Đăng ký" : "Đăng nhập"}
-          </Link>
-        </p>
+        {!admin && (
+          <p className="mt-6 text-center text-sm text-slate-500">
+            {mode === "login" ? "Chưa có tài khoản? " : "Đã có tài khoản? "}
+            <Link
+              className="font-medium text-indigo-600"
+              to={mode === "login" ? "/register" : "/login"}
+            >
+              {mode === "login" ? "Đăng ký" : "Đăng nhập"}
+            </Link>
+          </p>
+        )}
+        {admin && (
+          <p className="mt-5 text-center text-sm text-slate-500">
+            <Link className="text-indigo-600 hover:underline" to="/login">
+              Đến đăng nhập người dùng
+            </Link>
+          </p>
+        )}
       </section>
     </div>
   );

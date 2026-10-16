@@ -1,28 +1,47 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { Users, UserRound, ShieldCheck, Activity, LogOut } from "lucide-react";
+import {
+  Users,
+  UserRound,
+  ShieldCheck,
+  Activity,
+  LogOut,
+  PanelsTopLeft,
+  LayoutDashboard,
+} from "lucide-react";
 import { useLogout, useMe, endSession } from "@/features/auth/api/auth.api";
 import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@/components/feedback";
-export function AppLayout() {
+export function AppLayout({ area }: { area: "admin" | "user" }) {
   const me = useMe();
   const logout = useLogout();
+  const admin = area === "admin";
+  const home = admin ? "/admin" : "/user";
+  const links = admin
+    ? [
+        { to: "/admin", label: "Dashboard quản trị", icon: LayoutDashboard },
+        { to: "/admin/users", label: "Quản lý người dùng", icon: Users },
+        { to: "/admin/health", label: "Trạng thái API", icon: Activity },
+        { to: "/admin/profile", label: "Hồ sơ quản trị viên", icon: UserRound },
+        { to: "/admin/security", label: "Bảo mật", icon: ShieldCheck },
+      ]
+    : [
+        { to: "/user", label: "Dashboard cá nhân", icon: LayoutDashboard },
+        { to: "/user/profile", label: "Hồ sơ cá nhân", icon: UserRound },
+        { to: "/user/security", label: "Bảo mật", icon: ShieldCheck },
+      ];
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[240px_1fr]">
       <aside className="border-b border-slate-200 bg-white p-5 lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
-        <LinkBrand />
+        <LinkBrand home={home} />
         <p className="mb-3 mt-10 text-xs font-medium uppercase tracking-wider text-slate-400">
-          Không gian làm việc
+          {admin ? "Khu vực quản trị" : "Khu vực người dùng"}
         </p>
         <nav className="flex flex-wrap gap-2 lg:flex-col">
-          {[
-            { to: "/profile", label: "Hồ sơ cá nhân", icon: UserRound },
-            { to: "/users", label: "Người dùng", icon: Users },
-            { to: "/security", label: "Bảo mật", icon: ShieldCheck },
-            { to: "/health", label: "Trạng thái API", icon: Activity },
-          ].map(({ to, label, icon: Icon }) => (
+          {links.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
+              end={to === home}
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium ${isActive ? "bg-indigo-50 text-indigo-700" : "text-slate-500 hover:bg-slate-50"}`
               }
@@ -33,9 +52,9 @@ export function AppLayout() {
           ))}
         </nav>
         <p className="mt-10 text-xs leading-6 text-slate-400">
-          User Management
+          Project management
           <br />
-          Không gian quản lý tài khoản
+          {admin ? "Quản trị hệ thống" : "Không gian cá nhân"}
         </p>
       </aside>
       <div className="min-w-0">
@@ -74,13 +93,13 @@ export function AppLayout() {
     </div>
   );
 }
-function LinkBrand() {
+function LinkBrand({ home }: { home: string }) {
   return (
-    <NavLink to="/profile" className="flex items-center gap-3">
-      <span className="rounded-lg bg-indigo-600 p-2 text-sm font-bold text-white">
-        UM
+    <NavLink to={home} className="flex items-center gap-3">
+      <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white">
+        <PanelsTopLeft size={24} strokeWidth={1.8} aria-hidden="true" />
       </span>
-      <span className="font-semibold tracking-tight">User Management</span>
+      <span className="font-semibold tracking-tight">Project management</span>
     </NavLink>
   );
 }
