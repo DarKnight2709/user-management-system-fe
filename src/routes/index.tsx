@@ -20,6 +20,7 @@ import { UserDashboard } from "@/features/dashboard/components/user-dashboard";
 import { OrganizationsPage } from "@/features/organizations/components/organizations-page";
 import { CreateOrganizationPage } from "@/features/organizations/components/create-organization-page";
 import { OrganizationDetailPage } from "@/features/organizations/components/organization-detail-page";
+import { AcceptInvitationPage } from "@/features/invitations/components/accept-invitation-page";
 function ProtectedRoute({ admin = false }: { admin?: boolean }) {
   const current = useSession();
   if (!current || (current.portal || "user") !== (admin ? "admin" : "user"))
@@ -45,6 +46,7 @@ export const router = createBrowserRouter([
     errorElement: <RouteError />,
     children: [
       { path: "/login", element: <AuthPage key="login" mode="login" /> },
+      { path: "/invitations/accept", element: <AcceptInvitationPage /> },
       {
         path: "/admin/login",
         element: <AuthPage key="admin-login" mode="login" portal="admin" />,
@@ -69,6 +71,10 @@ export const router = createBrowserRouter([
               {
                 path: "/organization/:slug/members",
                 element: <OrganizationDetailPage view="members" />,
+              },
+              {
+                path: "/organization/:slug/invitations",
+                element: <OrganizationDetailPage view="invitations" />,
               },
               {
                 path: "/organization/create",

@@ -8,11 +8,12 @@ import type { Organization } from "../types";
 import { createOrganizationSchema } from "../schemas/organization.schema";
 import { OrganizationEditor } from "./organization-editor";
 import { OrganizationMembers } from "./organization-members";
+import { OrganizationInvitations } from "@/features/invitations/components/organization-invitations";
 
 export function OrganizationDetailPage({
   view = "overview",
 }: {
-  view?: "overview" | "members";
+  view?: "overview" | "members" | "invitations";
 }) {
   const { slug } = useParams();
   const parsed = createOrganizationSchema.shape.slug.safeParse(slug);
@@ -27,7 +28,11 @@ export function OrganizationDetailPage({
       <header>
         <p className="eyebrow">Không gian làm việc</p>
         <h1>
-          {view === "members" ? "Thành viên tổ chức" : "Chi tiết tổ chức"}
+          {view === "members"
+            ? "Thành viên tổ chức"
+            : view === "invitations"
+              ? "Lời mời tổ chức"
+              : "Chi tiết tổ chức"}
         </h1>
         <p className="subtitle">Thông tin tổ chức bạn có quyền truy cập.</p>
       </header>
@@ -45,7 +50,7 @@ function OrganizationDetail({
   view,
 }: {
   slug: string;
-  view: "overview" | "members";
+  view: "overview" | "members" | "invitations";
 }) {
   const organization = useOrganization(slug);
   if (organization.isPending) return <Skeleton />;
@@ -62,7 +67,7 @@ function OrganizationDetail({
     <>
       <nav
         aria-label="Điều hướng tổ chức"
-        className="flex gap-2 border-b border-slate-200 pb-3"
+        className="flex flex-wrap gap-2 border-b border-slate-200 pb-3"
       >
         {[
           {
@@ -72,6 +77,10 @@ function OrganizationDetail({
           {
             to: `/organization/${encodeURIComponent(slug)}/members`,
             label: "Thành viên",
+          },
+          {
+            to: `/organization/${encodeURIComponent(slug)}/invitations`,
+            label: "Lời mời",
           },
         ].map(({ to, label }) => (
           <NavLink
@@ -86,7 +95,12 @@ function OrganizationDetail({
           </NavLink>
         ))}
       </nav>
-      {view === "members" ? (
+      {view === "invitations" ? (
+        <OrganizationInvitations
+          key={organization.data.id}
+          organizationId={organization.data.id}
+        />
+      ) : view === "members" ? (
         <OrganizationMembers
           key={organization.data.id}
           organizationId={organization.data.id}

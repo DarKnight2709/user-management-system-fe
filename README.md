@@ -105,6 +105,14 @@ Feature health không có request body nên không cần schema form. LoginForm,
 
 ## Kiểm tra thủ công
 
+### Lời mời tổ chức
+
+- Tab “Lời mời” tại `/organization/:slug/invitations` nối đủ 5 API quản lý: tạo bằng email, danh sách phân trang, gửi lại, lấy link để sao chép và thu hồi. Backend yêu cầu `ORGANIZATION_MEMBER:invite` hoặc chủ sở hữu; lỗi 403 hiển thị tại tab. Chỉ tạo lời mời MEMBER, không chọn ADMIN.
+- Trạng thái lifecycle và email được hiển thị riêng. `emailQueued` chỉ xác nhận xếp hàng, không xác nhận đến hộp thư; SMTP SENT cũng không đồng nghĩa inbox delivery. Có nút làm mới thủ công, cooldown gửi lại 60 giây, tối đa 5 lần và hỗ trợ retryAfterSeconds khi server trả 429. Hết hạn/thu hồi/chấp nhận sẽ vô hiệu hóa các thao tác không hợp lệ.
+- Link do backend trả về được sao chép qua Clipboard API, có ô sao chép thủ công nếu trình duyệt chặn clipboard. Link/token không lưu vào query cache, biến mutation hoặc log; link dự phòng chỉ giữ trong state của dòng và bị xóa khi rời tab.
+- `/invitations/accept#token=…`: đọc token từ fragment và bỏ fragment khỏi thanh địa chỉ, giữ tạm trong memory/sessionStorage của tab để đi qua login/registration/reload. Token không đưa vào query string hoặc URL API; chỉ gửi trong body `POST /invitations/accept` khi người dùng bấm xác nhận. Đăng nhập người dùng quay lại trang chấp nhận nếu có lời mời đang chờ; đăng ký xong vẫn cần đăng nhập. Tài khoản phải trùng email được mời; có thao tác đăng xuất để đổi tài khoản. Thành công xóa token tạm và làm mới tổ chức/thành viên/lời mời.
+- Kiểm tra thực tế: tạo lời mời, xem trạng thái email, sao chép link, đăng xuất, mở link, đăng ký/đăng nhập đúng email, xác nhận và kiểm tra tổ chức/thành viên. Kiểm tra sai email, token lỗi/hết hạn/thu hồi, trùng lời mời, cooldown và clipboard bị chặn. Chưa xác minh end-to-end với backend/SMTP thật.
+
 1. Vào `/health`, xác nhận API và database hoạt động.
 2. Đăng ký tài khoản, đăng nhập, tải lại trang, sửa hồ sơ và upload JPEG.
 3. Làm mới phiên, đổi mật khẩu rồi đăng nhập bằng mật khẩu mới.

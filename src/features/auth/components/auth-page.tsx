@@ -11,6 +11,7 @@ import { LoginForm } from "./login-form";
 import { FormFields } from "@/components/form-fields";
 import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@/components/feedback";
+import { readPendingInvitation } from "@/features/invitations/lib/pending-invitation";
 export function AuthPage({
   mode,
   portal = "user",
@@ -19,7 +20,11 @@ export function AuthPage({
   portal?: "admin" | "user";
 }) {
   const admin = portal === "admin";
-  const destination = admin ? "/admin" : "/user";
+  const destination = admin
+    ? "/admin"
+    : readPendingInvitation()
+      ? "/invitations/accept"
+      : "/user";
   const current = useSession();
   const login = useLogin(portal);
   const signup = useRegister();
