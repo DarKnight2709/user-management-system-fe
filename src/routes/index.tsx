@@ -19,6 +19,7 @@ import { AdminDashboard } from "@/features/dashboard/components/admin-dashboard"
 import { UserDashboard } from "@/features/dashboard/components/user-dashboard";
 import { OrganizationsPage } from "@/features/organizations/components/organizations-page";
 import { CreateOrganizationPage } from "@/features/organizations/components/create-organization-page";
+import { OrganizationDetailPage } from "@/features/organizations/components/organization-detail-page";
 function ProtectedRoute({ admin = false }: { admin?: boolean }) {
   const current = useSession();
   if (!current || (current.portal || "user") !== (admin ? "admin" : "user"))
@@ -61,7 +62,18 @@ export const router = createBrowserRouter([
             element: <AppLayout area="user" />,
             children: [
               { path: "/organization", element: <OrganizationsPage /> },
-              { path: "/organization/create", element: <CreateOrganizationPage /> },
+              {
+                path: "/organization/:slug",
+                element: <OrganizationDetailPage />,
+              },
+              {
+                path: "/organization/:slug/members",
+                element: <OrganizationDetailPage view="members" />,
+              },
+              {
+                path: "/organization/create",
+                element: <CreateOrganizationPage />,
+              },
             ],
           },
           {

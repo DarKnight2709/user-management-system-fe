@@ -15,5 +15,13 @@ export const createOrganizationSchema = z.object({
     .regex(
       /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
       "Slug chỉ gồm chữ cái a–z, số và dấu gạch nối đơn giữa các nhóm.",
+    )
+    .refine(
+      (slug) => slug !== "create",
+      "Slug 'create' được dành cho trang tạo tổ chức. Vui lòng chọn slug khác.",
     ),
+});
+
+export const updateOrganizationSchema = createOrganizationSchema.pick({
+  name: true,
 });
