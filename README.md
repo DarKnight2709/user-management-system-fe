@@ -109,7 +109,13 @@ Feature health không có request body nên không cần schema form. LoginForm,
 
 - `/organization/:slug/roles`: tab Vai trò, nối `GET /organizations/:id/roles` (phân trang) và `GET /organizations/:id/roles/permissions` (catalog đang hoạt động). Có tạo, sửa tên/thay thế toàn bộ quyền và xóa vai trò tùy chỉnh qua POST/PATCH/DELETE tương ứng. Tên chuẩn hóa trim/uppercase, tối đa 50 ký tự, bắt đầu bằng chữ cái, chỉ gồm chữ, số, underscore. Không dùng OWNER/ADMIN/MEMBER; ADMIN/MEMBER mặc định chỉ xem, không sửa/xóa.
 - Tab Thành viên có “Quản lý vai trò”: chọn vai trò từ danh sách phân trang để gán bằng `PUT /organizations/:id/members/:memberId/roles/:roleId` hoặc thu hồi bằng DELETE cùng đường dẫn. `memberId` là ID membership, không phải user ID. Chỉ chủ sở hữu được thao tác ADMIN; OWNER không được gán/thu hồi như role. Thay đổi có xác nhận khi thu hồi/xóa, trạng thái pending, lỗi/thử lại và invalidation danh sách vai trò/thành viên/quyền truy cập tổ chức.
-- Backend là nơi kiểm tra quyền create/update/delete/assign/revoke và chống cấp quyền vượt thẩm quyền. Catalog hiển thị quyền khả dụng, không đồng nghĩa người đang xem có thể cấp tất cả quyền đó. Frontend không suy đoán quyền từ tên vai trò; API từ chối được hiển thị dưới dạng lỗi. Chưa tích hợp endpoint ownership-transfer trong thay đổi này.
+- Backend là nơi kiểm tra quyền create/update/delete/assign/revoke và chống cấp quyền vượt thẩm quyền. Catalog hiển thị quyền khả dụng, không đồng nghĩa người đang xem có thể cấp tất cả quyền đó. Frontend không suy đoán quyền từ tên vai trò; API từ chối được hiển thị dưới dạng lỗi.
+
+### Chuyển quyền sở hữu
+
+- Tab Tổng quan chỉ hiển thị mục “Chuyển quyền sở hữu” khi tài khoản hiện tại trùng `ownerId`. Chọn một thành viên ACTIVE khác từ danh sách phân trang, sau đó xác nhận chuyển tổ chức cho username được hiển thị. Gửi `POST /organizations/:organizationId/transfer-ownership` với `{ memberId }` là UUID membership, không phải user ID.
+- Backend xác minh chủ sở hữu đang hoạt động và thành viên thuộc đúng tổ chức; ADMIN/platform admin không được suy đoán có quyền chuyển. Thành công cập nhật lại cache tổ chức, thành viên, vai trò và lời mời; mục chuyển quyền biến mất với chủ cũ. Chủ cũ vẫn là thành viên, backend đảm bảo vai trò MEMBER và giữ vai trò đã có. Không thay slug URL.
+- Có loading, lỗi/thử lại khi tải thành viên, khóa thao tác khi đang chuyển và thông báo lỗi backend. Chưa xác minh chuyển quyền end-to-end với dữ liệu thật.
 
 ### Lời mời tổ chức
 

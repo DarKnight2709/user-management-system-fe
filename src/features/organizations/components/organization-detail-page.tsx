@@ -10,6 +10,7 @@ import { OrganizationEditor } from "./organization-editor";
 import { OrganizationMembers } from "./organization-members";
 import { OrganizationInvitations } from "@/features/invitations/components/organization-invitations";
 import { OrganizationRoles } from "@/features/roles/components/organization-roles";
+import { OrganizationOwnership } from "./organization-ownership";
 
 export function OrganizationDetailPage({
   view = "overview",
@@ -124,6 +125,10 @@ function OrganizationDetail({
           <OrganizationDetails organization={organization.data} />
           <OrganizationEditor
             key={organization.data.id}
+            organization={organization.data}
+          />
+          <OrganizationOwnership
+            key={organization.data.ownerId}
             organization={organization.data}
           />
         </>
