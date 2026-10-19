@@ -4,6 +4,7 @@ import { ErrorNotice } from "@/components/feedback";
 import { usePermissionCatalog, useRoleChange } from "../api/roles.api";
 import type { OrganizationRole } from "../types";
 import { RoleForm } from "./role-form";
+import { useOrganizationAccess } from "@/features/organizations/hooks/use-organization-access";
 
 export function RoleEditor({
   organizationId,
@@ -16,6 +17,7 @@ export function RoleEditor({
 }) {
   const catalog = usePermissionCatalog(organizationId);
   const change = useRoleChange(organizationId);
+  const access = useOrganizationAccess();
   return (
     <section className="panel">
       <h2 className="mb-5 text-lg font-semibold">
@@ -33,7 +35,9 @@ export function RoleEditor({
       ) : (
         <RoleForm
           role={role}
-          permissions={catalog.data}
+          permissions={catalog.data.filter((permission) =>
+            access.can(permission.resource, permission.action),
+          )}
           pending={change.isPending}
           onCancel={onClose}
           onSubmit={async (input) => {

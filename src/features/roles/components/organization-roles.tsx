@@ -8,6 +8,8 @@ import { ErrorNotice } from "@/components/feedback";
 import { useRoles, useRoleChange } from "../api/roles.api";
 import type { OrganizationRole } from "../types";
 import { RoleEditor } from "./role-editor";
+import { useOrganizationAccess } from "@/features/organizations/hooks/use-organization-access";
+import { canManageRolePermissions } from "@/features/organizations/lib/organization-access";
 
 export function OrganizationRoles({
   organizationId,
@@ -20,6 +22,9 @@ export function OrganizationRoles({
   );
   const roles = useRoles(organizationId, page);
   const change = useRoleChange(organizationId);
+  const access = useOrganizationAccess();
+  const canManage = (role: OrganizationRole) =>
+    canManageRolePermissions(access, role.permissions);
   if (roles.isPending) return <Skeleton />;
   if (roles.isError)
     return (
@@ -39,22 +44,27 @@ export function OrganizationRoles({
           </h2>
           <p className="subtitle">Quản lý vai trò và quyền trong tổ chức.</p>
         </div>
-        <Button
-          disabled={editing !== undefined || change.isPending}
-          onClick={() => setEditing(null)}
-        >
-          <Plus size={16} aria-hidden="true" />
-          Tạo vai trò
-        </Button>
+        {access.can("ORGANIZATION_ROLE", "create") && (
+          <Button
+            disabled={editing !== undefined || change.isPending}
+            onClick={() => setEditing(null)}
+          >
+            <Plus size={16} aria-hidden="true" />
+            Tạo vai trò
+          </Button>
+        )}
       </header>
-      {editing !== undefined && (
-        <RoleEditor
-          key={editing?.id || "new"}
-          organizationId={organizationId}
-          role={editing}
-          onClose={() => setEditing(undefined)}
-        />
-      )}
+      {editing !== undefined &&
+        (editing
+          ? access.can("ORGANIZATION_ROLE", "update") && canManage(editing)
+          : access.can("ORGANIZATION_ROLE", "create")) && (
+          <RoleEditor
+            key={editing?.id || "new"}
+            organizationId={organizationId}
+            role={editing}
+            onClose={() => setEditing(undefined)}
+          />
+        )}
       {change.isError && <ErrorNotice error={change.error} />}
       <div className="space-y-4">
         {roles.data.items.map((role) => (
@@ -72,31 +82,37 @@ export function OrganizationRoles({
               </div>
               {!role.isBuiltIn && (
                 <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    disabled={editing !== undefined || change.isPending}
-                    onClick={() => setEditing(role)}
-                  >
-                    <Pencil size={16} aria-hidden="true" />
-                    Sửa
-                  </Button>
-                  <ConfirmDialog
-                    title="Xóa vai trò"
-                    description={`Xóa vai trò ${role.name}? Thành viên sẽ mất quyền do vai trò này cung cấp.`}
-                    pending={change.isPending || editing !== undefined}
-                    onConfirm={() =>
-                      change.mutate(
-                        { action: "delete", id: role.id },
-                        {
-                          onSuccess: () => {
-                            toast.success("Đã xóa vai trò.");
-                            if (roles.data.items.length === 1 && page > 1)
-                              setPage(page - 1);
-                          },
-                        },
-                      )
-                    }
-                  />
+                  {access.can("ORGANIZATION_ROLE", "update") &&
+                    canManage(role) && (
+                      <Button
+                        variant="outline"
+                        disabled={editing !== undefined || change.isPending}
+                        onClick={() => setEditing(role)}
+                      >
+                        <Pencil size={16} aria-hidden="true" />
+                        Sửa
+                      </Button>
+                    )}
+                  {access.can("ORGANIZATION_ROLE", "delete") &&
+                    canManage(role) && (
+                      <ConfirmDialog
+                        title="Xóa vai trò"
+                        description={`Xóa vai trò ${role.name}? Thành viên sẽ mất quyền do vai trò này cung cấp.`}
+                        pending={change.isPending || editing !== undefined}
+                        onConfirm={() =>
+                          change.mutate(
+                            { action: "delete", id: role.id },
+                            {
+                              onSuccess: () => {
+                                toast.success("Đã xóa vai trò.");
+                                if (roles.data.items.length === 1 && page > 1)
+                                  setPage(page - 1);
+                              },
+                            },
+                          )
+                        }
+                      />
+                    )}
                 </div>
               )}
             </div>

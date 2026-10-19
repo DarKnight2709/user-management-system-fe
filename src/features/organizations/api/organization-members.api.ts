@@ -2,7 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { api } from "@/lib/axios";
 import type { ApiResponse } from "@/types/api";
-import type { Organization, PaginatedOrganizationMembers } from "../types";
+import type {
+  Organization,
+  OrganizationMember,
+  PaginatedOrganizationMembers,
+} from "../types";
 
 export const organizationMembersApi = {
   leave: async (organizationId: string) => {
@@ -43,7 +47,13 @@ export function useLeaveOrganization(
       client.removeQueries({
         queryKey: ["organizations", "detail", organization.slug],
       });
-      for (const key of ["members", "roles", "permission-catalog"])
+      for (const key of [
+        "members",
+        "roles",
+        "permission-catalog",
+        "access",
+        "self-member",
+      ])
         client.removeQueries({
           queryKey: ["organizations", key, organization.id],
         });
@@ -72,5 +82,32 @@ export function useOrganizationMembers(organizationId: string, page: number) {
     queryFn: ({ signal }) =>
       organizationMembersApi.list(organizationId, page, 20, signal),
     staleTime: 0,
+  });
+}
+
+export function useCurrentOrganizationMember(
+  organizationId: string,
+  userId: string,
+  enabled: boolean,
+) {
+  return useQuery({
+    queryKey: ["organizations", "self-member", organizationId, userId],
+    enabled,
+    staleTime: 0,
+    queryFn: async ({ signal }): Promise<OrganizationMember | null> => {
+      for (let page = 1; page <= 1_000_000; page += 1) {
+        const result = await organizationMembersApi.list(
+          organizationId,
+          page,
+          100,
+          signal,
+        );
+        const member = result.items.find((item) => item.user.id === userId);
+        if (member) return member;
+        if (!result.items.length || result.page * result.limit >= result.total)
+          break;
+      }
+      return null;
+    },
   });
 }

@@ -7,12 +7,17 @@ export function OrganizationMembersTable({
   onManageRoles,
   onRemove,
   pending,
+  canManageRoles,
+  canRemove,
 }: {
   members: OrganizationMember[];
   onManageRoles: (memberId: string) => void;
   onRemove: (memberId: string) => void;
   pending: boolean;
+  canManageRoles: boolean;
+  canRemove: (member: OrganizationMember) => boolean;
 }) {
+  const showActions = canManageRoles || members.some(canRemove);
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">
@@ -26,7 +31,7 @@ export function OrganizationMembersTable({
               "Vai trò",
               "Trạng thái",
               "Ngày tham gia",
-              "Thao tác",
+              ...(showActions ? ["Thao tác"] : []),
             ].map((title) => (
               <th
                 key={title}
@@ -79,25 +84,29 @@ export function OrganizationMembersTable({
                   {new Date(member.createdAt).toLocaleDateString("vi-VN")}
                 </time>
               </td>
-              <td className="px-5 py-4">
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="outline"
-                    disabled={pending}
-                    onClick={() => onManageRoles(member.id)}
-                  >
-                    Quản lý vai trò
-                  </Button>
-                  {!member.isOwner && (
-                    <ConfirmDialog
-                      title="Xóa thành viên"
-                      description={`Xóa @${member.user.username} khỏi tổ chức? Thành viên sẽ mất quyền truy cập tổ chức; tài khoản người dùng vẫn được giữ.`}
-                      pending={pending}
-                      onConfirm={() => onRemove(member.id)}
-                    />
-                  )}
-                </div>
-              </td>
+              {showActions && (
+                <td className="px-5 py-4">
+                  <div className="flex flex-wrap gap-2">
+                    {canManageRoles && (
+                      <Button
+                        variant="outline"
+                        disabled={pending}
+                        onClick={() => onManageRoles(member.id)}
+                      >
+                        Quản lý vai trò
+                      </Button>
+                    )}
+                    {canRemove(member) && (
+                      <ConfirmDialog
+                        title="Xóa thành viên"
+                        description={`Xóa @${member.user.username} khỏi tổ chức? Thành viên sẽ mất quyền truy cập tổ chức; tài khoản người dùng vẫn được giữ.`}
+                        pending={pending}
+                        onConfirm={() => onRemove(member.id)}
+                      />
+                    )}
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

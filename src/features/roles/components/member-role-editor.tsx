@@ -7,6 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorNotice } from "@/components/feedback";
 import type { OrganizationMember } from "@/features/organizations/types";
 import { useRoles, useRoleChange } from "../api/roles.api";
+import { useOrganizationAccess } from "@/features/organizations/hooks/use-organization-access";
+import { canManageRolePermissions } from "@/features/organizations/lib/organization-access";
 
 export function MemberRoleEditor({
   organizationId,
@@ -24,6 +26,7 @@ export function MemberRoleEditor({
   const me = useMe();
   const change = useRoleChange(organizationId);
   const isOwner = me.data?.id === ownerId;
+  const access = useOrganizationAccess();
   return (
     <section className="panel">
       <header className="mb-5 flex flex-wrap items-start justify-between gap-3">
@@ -68,6 +71,14 @@ export function MemberRoleEditor({
                 const blocked =
                   change.isPending ||
                   (role.name.toUpperCase() === "ADMIN" && !isOwner);
+                const permitted =
+                  access.can(
+                    "ORGANIZATION_ROLE",
+                    assigned ? "revoke" : "assign",
+                  ) &&
+                  (isOwner ||
+                    (role.name.toUpperCase() !== "ADMIN" &&
+                      canManageRolePermissions(access, role.permissions)));
                 return (
                   <div
                     key={role.id}
@@ -82,45 +93,47 @@ export function MemberRoleEditor({
                           : ""}
                       </p>
                     </div>
-                    {assigned ? (
-                      <ConfirmDialog
-                        title="Thu hồi vai trò"
-                        description={`Thu hồi ${role.name} của @${member.user.username}? Thành viên có thể mất quyền truy cập tương ứng.`}
-                        pending={blocked}
-                        onConfirm={() =>
-                          change.mutate(
-                            {
-                              action: "revoke",
-                              memberId: member.id,
-                              roleId: role.id,
-                            },
-                            {
-                              onSuccess: () =>
-                                toast.success("Đã thu hồi vai trò."),
-                            },
-                          )
-                        }
-                      />
-                    ) : (
-                      <Button
-                        variant="outline"
-                        disabled={blocked}
-                        onClick={() =>
-                          change.mutate(
-                            {
-                              action: "assign",
-                              memberId: member.id,
-                              roleId: role.id,
-                            },
-                            {
-                              onSuccess: () => toast.success("Đã gán vai trò."),
-                            },
-                          )
-                        }
-                      >
-                        Gán vai trò
-                      </Button>
-                    )}
+                    {permitted &&
+                      (assigned ? (
+                        <ConfirmDialog
+                          title="Thu hồi vai trò"
+                          description={`Thu hồi ${role.name} của @${member.user.username}? Thành viên có thể mất quyền truy cập tương ứng.`}
+                          pending={blocked}
+                          onConfirm={() =>
+                            change.mutate(
+                              {
+                                action: "revoke",
+                                memberId: member.id,
+                                roleId: role.id,
+                              },
+                              {
+                                onSuccess: () =>
+                                  toast.success("Đã thu hồi vai trò."),
+                              },
+                            )
+                          }
+                        />
+                      ) : (
+                        <Button
+                          variant="outline"
+                          disabled={blocked}
+                          onClick={() =>
+                            change.mutate(
+                              {
+                                action: "assign",
+                                memberId: member.id,
+                                roleId: role.id,
+                              },
+                              {
+                                onSuccess: () =>
+                                  toast.success("Đã gán vai trò."),
+                              },
+                            )
+                          }
+                        >
+                          Gán vai trò
+                        </Button>
+                      ))}
                   </div>
                 );
               })}

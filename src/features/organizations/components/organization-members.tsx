@@ -9,6 +9,7 @@ import {
 } from "../api/organization-members.api";
 import { OrganizationMembersTable } from "./organization-members-table";
 import { MemberRoleEditor } from "@/features/roles/components/member-role-editor";
+import { useMemberActions } from "../hooks/use-member-actions";
 
 export function OrganizationMembers({
   organizationId,
@@ -23,6 +24,10 @@ export function OrganizationMembers({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const members = useOrganizationMembers(organizationId, page);
   const remove = useRemoveOrganizationMember(organizationId);
+  const { actor, canManageRoles, canRemove } = useMemberActions(
+    organizationId,
+    ownerId,
+  );
   const selected = members.data?.items.find(
     (member) => member.id === selectedId,
   );
@@ -37,7 +42,15 @@ export function OrganizationMembers({
         </p>
       </header>
       {remove.isError && <ErrorNotice error={remove.error} />}
-      {selected && !members.isError && (
+      {actor.isError && (
+        <ErrorNotice
+          error={actor.error}
+          retry={() => {
+            void actor.refetch();
+          }}
+        />
+      )}
+      {selected && !members.isError && canManageRoles && (
         <MemberRoleEditor
           key={selected.id}
           organizationId={organizationId}
@@ -66,6 +79,8 @@ export function OrganizationMembers({
             <OrganizationMembersTable
               members={members.data.items}
               onManageRoles={setSelectedId}
+              canManageRoles={canManageRoles}
+              canRemove={canRemove}
               pending={remove.isPending}
               onRemove={(memberId) => {
                 const lastOnPage = members.data.items.length === 1 && page > 1;
