@@ -105,6 +105,12 @@ Feature health không có request body nên không cần schema form. LoginForm,
 
 ## Kiểm tra thủ công
 
+### Vai trò tổ chức
+
+- `/organization/:slug/roles`: tab Vai trò, nối `GET /organizations/:id/roles` (phân trang) và `GET /organizations/:id/roles/permissions` (catalog đang hoạt động). Có tạo, sửa tên/thay thế toàn bộ quyền và xóa vai trò tùy chỉnh qua POST/PATCH/DELETE tương ứng. Tên chuẩn hóa trim/uppercase, tối đa 50 ký tự, bắt đầu bằng chữ cái, chỉ gồm chữ, số, underscore. Không dùng OWNER/ADMIN/MEMBER; ADMIN/MEMBER mặc định chỉ xem, không sửa/xóa.
+- Tab Thành viên có “Quản lý vai trò”: chọn vai trò từ danh sách phân trang để gán bằng `PUT /organizations/:id/members/:memberId/roles/:roleId` hoặc thu hồi bằng DELETE cùng đường dẫn. `memberId` là ID membership, không phải user ID. Chỉ chủ sở hữu được thao tác ADMIN; OWNER không được gán/thu hồi như role. Thay đổi có xác nhận khi thu hồi/xóa, trạng thái pending, lỗi/thử lại và invalidation danh sách vai trò/thành viên/quyền truy cập tổ chức.
+- Backend là nơi kiểm tra quyền create/update/delete/assign/revoke và chống cấp quyền vượt thẩm quyền. Catalog hiển thị quyền khả dụng, không đồng nghĩa người đang xem có thể cấp tất cả quyền đó. Frontend không suy đoán quyền từ tên vai trò; API từ chối được hiển thị dưới dạng lỗi. Chưa tích hợp endpoint ownership-transfer trong thay đổi này.
+
 ### Lời mời tổ chức
 
 - Tab “Lời mời” tại `/organization/:slug/invitations` nối đủ 5 API quản lý: tạo bằng email, danh sách phân trang, gửi lại, lấy link để sao chép và thu hồi. Backend yêu cầu `ORGANIZATION_MEMBER:invite` hoặc chủ sở hữu; lỗi 403 hiển thị tại tab. Chỉ tạo lời mời MEMBER, không chọn ADMIN.

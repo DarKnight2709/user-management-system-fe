@@ -9,11 +9,12 @@ import { createOrganizationSchema } from "../schemas/organization.schema";
 import { OrganizationEditor } from "./organization-editor";
 import { OrganizationMembers } from "./organization-members";
 import { OrganizationInvitations } from "@/features/invitations/components/organization-invitations";
+import { OrganizationRoles } from "@/features/roles/components/organization-roles";
 
 export function OrganizationDetailPage({
   view = "overview",
 }: {
-  view?: "overview" | "members" | "invitations";
+  view?: "overview" | "members" | "invitations" | "roles";
 }) {
   const { slug } = useParams();
   const parsed = createOrganizationSchema.shape.slug.safeParse(slug);
@@ -32,7 +33,9 @@ export function OrganizationDetailPage({
             ? "Thành viên tổ chức"
             : view === "invitations"
               ? "Lời mời tổ chức"
-              : "Chi tiết tổ chức"}
+              : view === "roles"
+                ? "Vai trò tổ chức"
+                : "Chi tiết tổ chức"}
         </h1>
         <p className="subtitle">Thông tin tổ chức bạn có quyền truy cập.</p>
       </header>
@@ -50,7 +53,7 @@ function OrganizationDetail({
   view,
 }: {
   slug: string;
-  view: "overview" | "members" | "invitations";
+  view: "overview" | "members" | "invitations" | "roles";
 }) {
   const organization = useOrganization(slug);
   if (organization.isPending) return <Skeleton />;
@@ -82,6 +85,10 @@ function OrganizationDetail({
             to: `/organization/${encodeURIComponent(slug)}/invitations`,
             label: "Lời mời",
           },
+          {
+            to: `/organization/${encodeURIComponent(slug)}/roles`,
+            label: "Vai trò",
+          },
         ].map(({ to, label }) => (
           <NavLink
             key={to}
@@ -95,7 +102,12 @@ function OrganizationDetail({
           </NavLink>
         ))}
       </nav>
-      {view === "invitations" ? (
+      {view === "roles" ? (
+        <OrganizationRoles
+          key={organization.data.id}
+          organizationId={organization.data.id}
+        />
+      ) : view === "invitations" ? (
         <OrganizationInvitations
           key={organization.data.id}
           organizationId={organization.data.id}
@@ -105,6 +117,7 @@ function OrganizationDetail({
           key={organization.data.id}
           organizationId={organization.data.id}
           name={organization.data.name}
+          ownerId={organization.data.ownerId}
         />
       ) : (
         <>

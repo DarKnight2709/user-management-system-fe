@@ -73,6 +73,10 @@ export const router = createBrowserRouter([
                 element: <OrganizationDetailPage view="members" />,
               },
               {
+                path: "/organization/:slug/roles",
+                element: <OrganizationDetailPage view="roles" />,
+              },
+              {
                 path: "/organization/:slug/invitations",
                 element: <OrganizationDetailPage view="invitations" />,
               },

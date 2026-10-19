@@ -1,9 +1,12 @@
 import type { OrganizationMember } from "../types";
+import { Button } from "@/components/ui/button";
 
 export function OrganizationMembersTable({
   members,
+  onManageRoles,
 }: {
   members: OrganizationMember[];
+  onManageRoles: (memberId: string) => void;
 }) {
   return (
     <div className="overflow-x-auto">
@@ -13,17 +16,21 @@ export function OrganizationMembersTable({
         </caption>
         <thead className="bg-slate-50 text-slate-500">
           <tr>
-            {["Thành viên", "Vai trò", "Trạng thái", "Ngày tham gia"].map(
-              (title) => (
-                <th
-                  key={title}
-                  scope="col"
-                  className="whitespace-nowrap px-5 py-4 font-medium"
-                >
-                  {title}
-                </th>
-              ),
-            )}
+            {[
+              "Thành viên",
+              "Vai trò",
+              "Trạng thái",
+              "Ngày tham gia",
+              "Thao tác",
+            ].map((title) => (
+              <th
+                key={title}
+                scope="col"
+                className="whitespace-nowrap px-5 py-4 font-medium"
+              >
+                {title}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
@@ -66,6 +73,14 @@ export function OrganizationMembersTable({
                 <time dateTime={member.createdAt}>
                   {new Date(member.createdAt).toLocaleDateString("vi-VN")}
                 </time>
+              </td>
+              <td className="px-5 py-4">
+                <Button
+                  variant="outline"
+                  onClick={() => onManageRoles(member.id)}
+                >
+                  Quản lý vai trò
+                </Button>
               </td>
             </tr>
           ))}

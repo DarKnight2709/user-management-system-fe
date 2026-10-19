@@ -5,16 +5,23 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorNotice } from "@/components/feedback";
 import { useOrganizationMembers } from "../api/organization-members.api";
 import { OrganizationMembersTable } from "./organization-members-table";
+import { MemberRoleEditor } from "@/features/roles/components/member-role-editor";
 
 export function OrganizationMembers({
   organizationId,
   name,
+  ownerId,
 }: {
   organizationId: string;
   name: string;
+  ownerId: string;
 }) {
   const [page, setPage] = useState(1);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const members = useOrganizationMembers(organizationId, page);
+  const selected = members.data?.items.find(
+    (member) => member.id === selectedId,
+  );
   return (
     <section className="space-y-5">
       <header>
@@ -25,6 +32,15 @@ export function OrganizationMembers({
           Danh sách thành viên đang hoạt động trong tổ chức.
         </p>
       </header>
+      {selected && !members.isError && (
+        <MemberRoleEditor
+          key={selected.id}
+          organizationId={organizationId}
+          ownerId={ownerId}
+          member={selected}
+          onClose={() => setSelectedId(null)}
+        />
+      )}
       {members.isPending ? (
         <Skeleton />
       ) : members.isError ? (
@@ -42,7 +58,10 @@ export function OrganizationMembers({
             </p>
           </div>
           {members.data.items.length ? (
-            <OrganizationMembersTable members={members.data.items} />
+            <OrganizationMembersTable
+              members={members.data.items}
+              onManageRoles={setSelectedId}
+            />
           ) : (
             <div className="p-10 text-center">
               <Users
@@ -82,7 +101,10 @@ export function OrganizationMembers({
                 <Button
                   variant="outline"
                   disabled={page <= 1 || members.isFetching}
-                  onClick={() => setPage(page - 1)}
+                  onClick={() => {
+                    setSelectedId(null);
+                    setPage(page - 1);
+                  }}
                 >
                   Trước
                 </Button>
@@ -93,7 +115,10 @@ export function OrganizationMembers({
                     page * members.data.limit >= members.data.total ||
                     members.isFetching
                   }
-                  onClick={() => setPage(page + 1)}
+                  onClick={() => {
+                    setSelectedId(null);
+                    setPage(page + 1);
+                  }}
                 >
                   Sau
                 </Button>
