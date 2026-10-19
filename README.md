@@ -111,6 +111,10 @@ Feature health không có request body nên không cần schema form. LoginForm,
 - Tab Thành viên có “Quản lý vai trò”: chọn vai trò từ danh sách phân trang để gán bằng `PUT /organizations/:id/members/:memberId/roles/:roleId` hoặc thu hồi bằng DELETE cùng đường dẫn. `memberId` là ID membership, không phải user ID. Chỉ chủ sở hữu được thao tác ADMIN; OWNER không được gán/thu hồi như role. Thay đổi có xác nhận khi thu hồi/xóa, trạng thái pending, lỗi/thử lại và invalidation danh sách vai trò/thành viên/quyền truy cập tổ chức.
 - Backend là nơi kiểm tra quyền create/update/delete/assign/revoke và chống cấp quyền vượt thẩm quyền. Catalog hiển thị quyền khả dụng, không đồng nghĩa người đang xem có thể cấp tất cả quyền đó. Frontend không suy đoán quyền từ tên vai trò; API từ chối được hiển thị dưới dạng lỗi.
 
+### Xóa thành viên
+
+- Tab Thành viên có “Xóa thành viên” cho các thành viên không phải chủ sở hữu, yêu cầu xác nhận trước khi gọi `DELETE /organizations/:organizationId/members/:memberId` (204, không có body). Chỉ xóa membership, không xóa tài khoản. Backend kiểm tra `ORGANIZATION_MEMBER:remove`, cấm xóa chủ sở hữu và yêu cầu cấp bậc cao hơn đối với người không phải owner. Client hiển thị lỗi backend; chưa dùng endpoint effective-permissions để ẩn thao tác theo quyền. Thành công làm mới cache tổ chức/thành viên và lùi trang nếu xóa người cuối cùng trên trang.
+
 ### Chuyển quyền sở hữu
 
 - Tab Tổng quan chỉ hiển thị mục “Chuyển quyền sở hữu” khi tài khoản hiện tại trùng `ownerId`. Chọn một thành viên ACTIVE khác từ danh sách phân trang, sau đó xác nhận chuyển tổ chức cho username được hiển thị. Gửi `POST /organizations/:organizationId/transfer-ownership` với `{ memberId }` là UUID membership, không phải user ID.

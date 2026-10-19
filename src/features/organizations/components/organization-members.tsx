@@ -3,7 +3,10 @@ import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorNotice } from "@/components/feedback";
-import { useOrganizationMembers } from "../api/organization-members.api";
+import {
+  useOrganizationMembers,
+  useRemoveOrganizationMember,
+} from "../api/organization-members.api";
 import { OrganizationMembersTable } from "./organization-members-table";
 import { MemberRoleEditor } from "@/features/roles/components/member-role-editor";
 
@@ -19,6 +22,7 @@ export function OrganizationMembers({
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const members = useOrganizationMembers(organizationId, page);
+  const remove = useRemoveOrganizationMember(organizationId);
   const selected = members.data?.items.find(
     (member) => member.id === selectedId,
   );
@@ -32,6 +36,7 @@ export function OrganizationMembers({
           Danh sách thành viên đang hoạt động trong tổ chức.
         </p>
       </header>
+      {remove.isError && <ErrorNotice error={remove.error} />}
       {selected && !members.isError && (
         <MemberRoleEditor
           key={selected.id}
@@ -61,6 +66,16 @@ export function OrganizationMembers({
             <OrganizationMembersTable
               members={members.data.items}
               onManageRoles={setSelectedId}
+              pending={remove.isPending}
+              onRemove={(memberId) => {
+                const lastOnPage = members.data.items.length === 1 && page > 1;
+                remove.mutate(memberId, {
+                  onSuccess: () => {
+                    if (selectedId === memberId) setSelectedId(null);
+                    if (lastOnPage) setPage(page - 1);
+                  },
+                });
+              }}
             />
           ) : (
             <div className="p-10 text-center">
@@ -78,6 +93,7 @@ export function OrganizationMembers({
                 <Button
                   variant="outline"
                   className="mt-4"
+                  disabled={remove.isPending}
                   onClick={() => setPage(1)}
                 >
                   Về trang đầu
@@ -100,7 +116,7 @@ export function OrganizationMembers({
               <div className="flex gap-2">
                 <Button
                   variant="outline"
-                  disabled={page <= 1 || members.isFetching}
+                  disabled={page <= 1 || members.isFetching || remove.isPending}
                   onClick={() => {
                     setSelectedId(null);
                     setPage(page - 1);
@@ -113,7 +129,8 @@ export function OrganizationMembers({
                   disabled={
                     page >= 1_000_000 ||
                     page * members.data.limit >= members.data.total ||
-                    members.isFetching
+                    members.isFetching ||
+                    remove.isPending
                   }
                   onClick={() => {
                     setSelectedId(null);

@@ -1,12 +1,17 @@
 import type { OrganizationMember } from "../types";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export function OrganizationMembersTable({
   members,
   onManageRoles,
+  onRemove,
+  pending,
 }: {
   members: OrganizationMember[];
   onManageRoles: (memberId: string) => void;
+  onRemove: (memberId: string) => void;
+  pending: boolean;
 }) {
   return (
     <div className="overflow-x-auto">
@@ -75,12 +80,23 @@ export function OrganizationMembersTable({
                 </time>
               </td>
               <td className="px-5 py-4">
-                <Button
-                  variant="outline"
-                  onClick={() => onManageRoles(member.id)}
-                >
-                  Quản lý vai trò
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    disabled={pending}
+                    onClick={() => onManageRoles(member.id)}
+                  >
+                    Quản lý vai trò
+                  </Button>
+                  {!member.isOwner && (
+                    <ConfirmDialog
+                      title="Xóa thành viên"
+                      description={`Xóa @${member.user.username} khỏi tổ chức? Thành viên sẽ mất quyền truy cập tổ chức; tài khoản người dùng vẫn được giữ.`}
+                      pending={pending}
+                      onConfirm={() => onRemove(member.id)}
+                    />
+                  )}
+                </div>
               </td>
             </tr>
           ))}
