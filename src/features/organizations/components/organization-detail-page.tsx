@@ -11,6 +11,7 @@ import { OrganizationMembers } from "./organization-members";
 import { OrganizationInvitations } from "@/features/invitations/components/organization-invitations";
 import { OrganizationRoles } from "@/features/roles/components/organization-roles";
 import { OrganizationOwnership } from "./organization-ownership";
+import { LeaveOrganization } from "./leave-organization";
 
 export function OrganizationDetailPage({
   view = "overview",
@@ -128,6 +129,10 @@ function OrganizationDetail({
             organization={organization.data}
           />
           <OrganizationOwnership
+            key={organization.data.ownerId}
+            organization={organization.data}
+          />
+          <LeaveOrganization
             key={organization.data.ownerId}
             organization={organization.data}
           />

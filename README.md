@@ -113,6 +113,8 @@ Feature health không có request body nên không cần schema form. LoginForm,
 
 ### Xóa thành viên
 
+- Tab Tổng quan có “Rời tổ chức”, gọi `POST /organizations/:organizationId/members/leave` không có body (204). Thành viên xác nhận trước khi rời; owner phải chuyển quyền trước và không thấy nút xác nhận. Thành công về `/organization`, xóa cache chi tiết/thành viên/vai trò/catalog/lời mời của tổ chức vừa rời và làm mới danh sách, không gọi lại chi tiết đã mất quyền. Tài khoản cá nhân không bị xóa; backend là nơi kiểm tra membership và chặn owner rời trực tiếp.
+
 - Tab Thành viên có “Xóa thành viên” cho các thành viên không phải chủ sở hữu, yêu cầu xác nhận trước khi gọi `DELETE /organizations/:organizationId/members/:memberId` (204, không có body). Chỉ xóa membership, không xóa tài khoản. Backend kiểm tra `ORGANIZATION_MEMBER:remove`, cấm xóa chủ sở hữu và yêu cầu cấp bậc cao hơn đối với người không phải owner. Client hiển thị lỗi backend; chưa dùng endpoint effective-permissions để ẩn thao tác theo quyền. Thành công làm mới cache tổ chức/thành viên và lùi trang nếu xóa người cuối cùng trên trang.
 
 ### Chuyển quyền sở hữu
