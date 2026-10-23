@@ -1,0 +1,60 @@
+name: Build and Deploy Frontend
+
+on:
+  push:
+    branches: ["main"] # Hoặc nhánh chính của bạn
+
+jobs:
+  build-and-push-frontend:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: DarKnight2709
+          password: ${{ secrets.GH_PAT }}
+
+      - name: Build and push Frontend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/darknight2709/ums-frontend:latest
+
+  deploy-to-vps:
+    needs: build-and-push-frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute standalone deployment on VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo ${{ secrets.GH_PAT }} | docker login ghcr.io -u DarKnight2709 --password-stdin
+
+            # Kéo image frontend mới nhất
+            docker pull ghcr.io/darknight2709/ums-frontend:latest
+
+            # Dừng và xóa container cũ nếu đang chạy
+            docker stop ums-frontend || true
+            docker rm ums-frontend || true
+
+            # Chạy container frontend mới
+            docker run -d \
+              --name ums-frontend \
+              --restart always \
+              -p 80:8080 \
+              ghcr.io/darknight2709/ums-frontend:latest
+              
+            # Dọn dẹp image rác cũ để tiết kiệm dung lượng VPS
+            docker image prune -f
