@@ -54,7 +54,7 @@ export function AppLayout({ area }: { area: "admin" | "user" }) {
           ))}
         </nav>
         <p className="mt-10 text-xs leading-6 text-slate-400">
-          Project management
+          user management
           <br />
           {admin ? "Quản trị hệ thống" : "Không gian cá nhân"}
         </p>
@@ -101,7 +101,7 @@ function LinkBrand({ home }: { home: string }) {
       <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white">
         <PanelsTopLeft size={24} strokeWidth={1.8} aria-hidden="true" />
       </span>
-      <span className="font-semibold tracking-tight">Project management</span>
+      <span className="font-semibold tracking-tight">user management</span>
     </NavLink>
   );
 }

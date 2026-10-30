@@ -41,7 +41,7 @@ export function AuthPage({
           <PanelsTopLeft size={28} strokeWidth={1.8} aria-hidden="true" />
         </div>
         <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-indigo-600">
-          Project management
+          user management
         </p>
         <h1 className="text-4xl font-semibold leading-tight tracking-tight lg:text-5xl">
           {admin ? "Không gian quản trị." : "Không gian của bạn."}

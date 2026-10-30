@@ -1,4 +1,4 @@
-# Project management
+# user management
 
 Client đơn giản cho backend `../user-management-system`, sử dụng React + Vite + TypeScript strict, TanStack Query v5, Tailwind CSS v4, shadcn/ui (Radix), React Hook Form + Zod và React Router v7 (đáp ứng v6+).
 
