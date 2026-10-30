@@ -40,4 +40,11 @@ export const organizationViews: Record<
     resource: "ORGANIZATION_ROLE",
     action: "read",
   },
+  audit: {
+    title: "Nhật ký tổ chức",
+    label: "Nhật ký",
+    suffix: "/audit-logs",
+    resource: "ORGANIZATION_AUDIT_LOG",
+    action: "read",
+  },
 };

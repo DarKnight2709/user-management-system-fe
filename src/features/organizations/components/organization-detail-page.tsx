@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorNotice } from "@/components/feedback";
 import { OrganizationInvitations } from "@/features/invitations/components/organization-invitations";
 import { OrganizationRoles } from "@/features/roles/components/organization-roles";
+import { AuditLogs } from "@/features/audit/components/audit-logs-page";
 import { useOrganization } from "../api/organizations.api";
 import { useOrganizationAccess } from "../hooks/use-organization-access";
 import { organizationViews } from "../lib/organization-views";
@@ -122,6 +123,8 @@ function OrganizationViewContent({
   view: OrganizationView;
 }) {
   switch (view) {
+    case "audit":
+      return <AuditLogs organizationId={organization.id} />;
     case "roles":
       return <OrganizationRoles organizationId={organization.id} />;
     case "invitations":

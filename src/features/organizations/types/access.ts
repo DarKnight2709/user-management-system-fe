@@ -10,4 +10,4 @@ export interface OrganizationAccess {
   can: (resource: string, action: string) => boolean;
 }
 
-export type OrganizationView = "overview" | "members" | "invitations" | "roles";
+export type OrganizationView = "overview" | "members" | "invitations" | "roles" | "audit";

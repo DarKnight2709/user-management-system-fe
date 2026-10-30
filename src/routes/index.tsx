@@ -12,6 +12,7 @@ import { ProfilePage } from "@/features/users/components/profile-page";
 import { UsersPage } from "@/features/users/components/users-page";
 import { UserProfilePage } from "@/features/users/components/user-profile-page";
 import { HealthPage } from "@/features/health/components/health-page";
+import { AuditLogsPage } from "@/features/audit/components/audit-logs-page";
 import { AppLayout } from "./app-layout";
 import { ErrorNotice } from "@/components/feedback";
 import { AccessRoute } from "./access-routes";
@@ -81,6 +82,10 @@ export const router = createBrowserRouter([
                 element: <OrganizationDetailPage view="invitations" />,
               },
               {
+                path: "/organization/:slug/audit-logs",
+                element: <OrganizationDetailPage view="audit" />,
+              },
+              {
                 path: "/organization/create",
                 element: <CreateOrganizationPage />,
               },
@@ -124,6 +129,7 @@ export const router = createBrowserRouter([
                   { path: "users", element: <UsersPage /> },
                   { path: "users/:id", element: <UserProfilePage /> },
                   { path: "health", element: <HealthPage /> },
+                  { path: "audit-logs", element: <AuditLogsPage /> },
                   { path: "profile", element: <ProfilePage /> },
                   { path: "security", element: <SecurityPage /> },
                 ],
