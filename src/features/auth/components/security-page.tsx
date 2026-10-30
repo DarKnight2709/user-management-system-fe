@@ -1,11 +1,9 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { changePasswordSchema } from "../schemas/auth.schema";
 import type { ChangePasswordInput } from "../types";
 import { useChangePassword, useLogout } from "../api/auth.api";
-import { refreshSession } from "@/lib/axios";
 import { FormFields } from "@/components/form-fields";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -16,10 +14,6 @@ export function SecurityPage() {
   });
   const change = useChangePassword();
   const logout = useLogout();
-  const refresh = useMutation({
-    mutationFn: refreshSession,
-    onSuccess: () => toast.success("Đã làm mới phiên đăng nhập."),
-  });
   return (
     <div className="space-y-7">
       <header>
@@ -72,18 +66,7 @@ export function SecurityPage() {
       </section>
       <section className="panel">
         <h2 className="text-lg font-semibold">Phiên đăng nhập</h2>
-        <p className="my-3 text-sm text-slate-500">
-          Access token tự làm mới khi hết hạn. Đăng xuất tất cả sẽ thu hồi các
-          refresh token của tài khoản.
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <Button
-            variant="outline"
-            disabled={refresh.isPending}
-            onClick={() => refresh.mutate()}
-          >
-            {refresh.isPending ? "Đang làm mới…" : "Làm mới phiên"}
-          </Button>
+        <div className="mt-3 flex flex-wrap gap-3">
           <ConfirmDialog
             title="Đăng xuất tất cả"
             description="Thu hồi tất cả phiên refresh của tài khoản và trở về trang đăng nhập?"

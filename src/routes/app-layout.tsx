@@ -53,11 +53,6 @@ export function AppLayout({ area }: { area: "admin" | "user" }) {
             </NavLink>
           ))}
         </nav>
-        <p className="mt-10 text-xs leading-6 text-slate-400">
-          user management
-          <br />
-          {admin ? "Quản trị hệ thống" : "Không gian cá nhân"}
-        </p>
       </aside>
       <div className="min-w-0">
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-6 py-4 sm:px-10">
