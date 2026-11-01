@@ -6,15 +6,16 @@ import type {
   InvitationLink,
   PaginatedInvitations,
   AcceptedInvitation,
+  InvitationFilters,
 } from "../types";
 
 const base = (organizationId: string) =>
   `/organizations/${organizationId}/invitations`;
 export const invitationsApi = {
-  list: async (organizationId: string, page: number, signal?: AbortSignal) =>
+  list: async (organizationId: string, page: number, signal?: AbortSignal, filters: InvitationFilters = {}) =>
     (
       await api.get<ApiResponse<PaginatedInvitations>>(base(organizationId), {
-        params: { page, limit: 20 },
+        params: { page, limit: 20, ...filters },
         signal,
       })
     ).data.data,
@@ -46,10 +47,10 @@ export const invitationsApi = {
       })
     ).data.data,
 };
-export function useInvitations(organizationId: string, page: number) {
+export function useInvitations(organizationId: string, page: number, filters: InvitationFilters = {}) {
   return useQuery({
-    queryKey: ["invitations", organizationId, page],
-    queryFn: ({ signal }) => invitationsApi.list(organizationId, page, signal),
+    queryKey: ["invitations", organizationId, page, filters],
+    queryFn: ({ signal }) => invitationsApi.list(organizationId, page, signal, filters),
     staleTime: 0,
     gcTime: 0,
     retry: false,

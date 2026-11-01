@@ -1,4 +1,8 @@
 export type InvitationStatus = "PENDING" | "ACCEPTED" | "REVOKED" | "EXPIRED";
+export interface InvitationFilters {
+  email?: string;
+  status?: InvitationStatus;
+}
 export type DeliveryStatus = "NOT_QUEUED" | "QUEUED" | "SENT" | "FAILED";
 export interface Invitation {
   id: string;

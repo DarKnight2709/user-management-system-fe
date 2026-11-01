@@ -5,6 +5,8 @@ import { ErrorNotice } from "@/components/feedback";
 import { useCreateInvitation, useInvitations } from "../api/invitations.api";
 import { CreateInvitationForm } from "./create-invitation-form";
 import { InvitationRow } from "./invitation-row";
+import { InvitationFiltersForm } from "./invitation-filters";
+import type { InvitationFilters } from "../types";
 
 export function OrganizationInvitations({
   organizationId,
@@ -12,23 +14,14 @@ export function OrganizationInvitations({
   organizationId: string;
 }) {
   const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState<InvitationFilters>({});
   const [now, setNow] = useState(Date.now);
-  const invitations = useInvitations(organizationId, page);
+  const invitations = useInvitations(organizationId, page, filters);
   const create = useCreateInvitation(organizationId);
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, []);
-  if (invitations.isPending) return <Skeleton />;
-  if (invitations.isError)
-    return (
-      <ErrorNotice
-        error={invitations.error}
-        retry={() => {
-          void invitations.refetch();
-        }}
-      />
-    );
   return (
     <div className="space-y-6">
       <section className="panel">
@@ -54,7 +47,13 @@ export function OrganizationInvitations({
         )}
         {create.isError && <ErrorNotice error={create.error} />}
       </section>
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <InvitationFiltersForm onApply={(next) => {
+        setFilters(next);
+        setPage(1);
+      }} />
+      {invitations.isPending ? <Skeleton /> : invitations.isError ? (
+        <ErrorNotice error={invitations.error} retry={() => { void invitations.refetch(); }} />
+      ) : <section className="overflow-hidden rounded-xl border border-slate-200 bg-white" aria-busy={invitations.isFetching}>
         <div className="flex flex-wrap items-center justify-between gap-3 p-5">
           <h2 className="font-semibold">Lời mời ({invitations.data.total})</h2>
           <Button
@@ -101,7 +100,10 @@ export function OrganizationInvitations({
           </div>
         ) : (
           <p className="p-8 text-center text-sm text-slate-500">
-            Không có lời mời trên trang này.
+            {filters.email || filters.status
+              ? "Không có lời mời phù hợp với bộ lọc."
+              : "Không có lời mời trên trang này."}
+            {page > 1 && <Button variant="outline" className="ml-3" onClick={() => setPage(1)}>Về trang đầu</Button>}
           </p>
         )}
         <nav
@@ -136,7 +138,7 @@ export function OrganizationInvitations({
             </Button>
           </div>
         </nav>
-      </section>
+      </section>}
     </div>
   );
 }
