@@ -6,7 +6,8 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorNotice } from "@/components/feedback";
 import { useRoles, useRoleChange } from "../api/roles.api";
-import type { OrganizationRole } from "../types";
+import type { OrganizationRole, OrganizationRoleFilters } from "../types";
+import { RoleFiltersForm } from "./role-filters";
 import { RoleEditor } from "./role-editor";
 import { useOrganizationAccess } from "@/features/organizations/hooks/use-organization-access";
 import { canManageRolePermissions } from "@/features/organizations/lib/organization-access";
@@ -17,30 +18,21 @@ export function OrganizationRoles({
   organizationId: string;
 }) {
   const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState<OrganizationRoleFilters>({});
   const [editing, setEditing] = useState<OrganizationRole | null | undefined>(
     undefined,
   );
-  const roles = useRoles(organizationId, page);
+  const roles = useRoles(organizationId, page, filters);
   const change = useRoleChange(organizationId);
   const access = useOrganizationAccess();
   const canManage = (role: OrganizationRole) =>
     canManageRolePermissions(access, role.permissions);
-  if (roles.isPending) return <Skeleton />;
-  if (roles.isError)
-    return (
-      <ErrorNotice
-        error={roles.error}
-        retry={() => {
-          void roles.refetch();
-        }}
-      />
-    );
   return (
     <div className="space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold">
-            Vai trò ({roles.data.total})
+            Vai trò{roles.isSuccess ? ` (${roles.data.total})` : ""}
           </h2>
           <p className="subtitle">Quản lý vai trò và quyền trong tổ chức.</p>
         </div>
@@ -54,6 +46,12 @@ export function OrganizationRoles({
           </Button>
         )}
       </header>
+      <RoleFiltersForm organizationId={organizationId}
+        disabled={editing !== undefined || change.isPending}
+        onApply={(next) => {
+          setFilters(next);
+          setPage(1);
+        }} />
       {editing !== undefined &&
         (editing
           ? access.can("ORGANIZATION_ROLE", "update") && canManage(editing)
@@ -66,7 +64,10 @@ export function OrganizationRoles({
           />
         )}
       {change.isError && <ErrorNotice error={change.error} />}
-      <div className="space-y-4">
+      {roles.isPending ? <Skeleton /> : roles.isError ? (
+        <ErrorNotice error={roles.error} retry={() => { void roles.refetch(); }} />
+      ) : <>
+      <div className="space-y-4" aria-busy={roles.isFetching}>
         {roles.data.items.map((role) => (
           <section key={role.id} className="panel">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -135,7 +136,8 @@ export function OrganizationRoles({
         ))}
         {!roles.data.items.length && (
           <section className="panel text-sm text-slate-500">
-            Không có vai trò trên trang này.
+            {filters.search || filters.type || filters.permissionId ? "Không có vai trò phù hợp với bộ lọc." : "Không có vai trò trên trang này."}
+            {page > 1 && <Button variant="outline" className="ml-3" disabled={editing !== undefined || change.isPending} onClick={() => setPage(1)}>Về trang đầu</Button>}
           </section>
         )}
       </div>
@@ -169,6 +171,7 @@ export function OrganizationRoles({
           </Button>
         </div>
       </nav>
+      </>}
     </div>
   );
 }

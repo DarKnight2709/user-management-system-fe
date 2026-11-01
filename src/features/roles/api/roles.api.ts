@@ -3,6 +3,7 @@ import { api } from "@/lib/axios";
 import type { ApiResponse } from "@/types/api";
 import type {
   OrganizationPermission,
+  OrganizationRoleFilters,
   OrganizationRole,
   PaginatedRoles,
   RoleInput,
@@ -12,10 +13,10 @@ import type {
 const base = (organizationId: string) =>
   `/organizations/${organizationId}/roles`;
 export const rolesApi = {
-  list: async (organizationId: string, page: number, signal?: AbortSignal) =>
+  list: async (organizationId: string, page: number, signal?: AbortSignal, filters: OrganizationRoleFilters = {}) =>
     (
       await api.get<ApiResponse<PaginatedRoles>>(base(organizationId), {
-        params: { page, limit: 20 },
+        params: { page, limit: 20, ...filters, search: filters.search?.trim() || undefined },
         signal,
       })
     ).data.data,
@@ -50,10 +51,30 @@ export const rolesApi = {
     );
   },
 };
-export function useRoles(organizationId: string, page: number) {
+export function useRoles(organizationId: string, page: number, filters: OrganizationRoleFilters = {}) {
   return useQuery({
-    queryKey: ["organizations", "roles", organizationId, page],
-    queryFn: ({ signal }) => rolesApi.list(organizationId, page, signal),
+    queryKey: ["organizations", "roles", organizationId, page, filters],
+    queryFn: ({ signal }) => rolesApi.list(organizationId, page, signal, filters),
+    staleTime: 0,
+  });
+}
+export function useRoleFilterPermissions(organizationId: string) {
+  return useQuery({
+    queryKey: ["organizations", "roles", organizationId, "filter-permissions"],
+    queryFn: async ({ signal }) => {
+      // The grantable catalog excludes permissions that are still readable on roles.
+      const permissions = new Map<string, OrganizationPermission>();
+      for (let page = 1; page <= 1_000_000; page += 1) {
+        const result = await rolesApi.list(organizationId, page, signal);
+        for (const role of result.items)
+          for (const permission of role.permissions)
+            permissions.set(permission.id, permission);
+        if (!result.items.length || page * result.limit >= result.total) break;
+      }
+      return [...permissions.values()].sort((a, b) =>
+        `${a.resource}:${a.action}`.localeCompare(`${b.resource}:${b.action}`),
+      );
+    },
     staleTime: 0,
   });
 }

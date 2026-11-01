@@ -4,6 +4,12 @@ export interface OrganizationPermission {
   action: string;
   description: string | null;
 }
+
+export interface OrganizationRoleFilters {
+  search?: string;
+  type?: "BUILT_IN" | "CUSTOM";
+  permissionId?: string;
+}
 export interface OrganizationRole {
   id: string;
   name: string;
