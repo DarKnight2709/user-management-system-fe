@@ -6,6 +6,7 @@ import type {
   Organization,
   OrganizationMember,
   PaginatedOrganizationMembers,
+  OrganizationMemberFilters,
 } from "../types";
 
 export const organizationMembersApi = {
@@ -22,11 +23,12 @@ export const organizationMembersApi = {
     page = 1,
     limit = 20,
     signal?: AbortSignal,
+    filters: OrganizationMemberFilters = {},
   ) =>
     (
       await api.get<ApiResponse<PaginatedOrganizationMembers>>(
         `/organizations/${organizationId}/members`,
-        { params: { page, limit }, signal },
+        { params: { page, limit, ...filters }, signal },
       )
     ).data.data,
 };
@@ -76,11 +78,11 @@ export function useRemoveOrganizationMember(organizationId: string) {
   });
 }
 
-export function useOrganizationMembers(organizationId: string, page: number) {
+export function useOrganizationMembers(organizationId: string, page: number, filters: OrganizationMemberFilters = {}) {
   return useQuery({
-    queryKey: ["organizations", "members", organizationId, page],
+    queryKey: ["organizations", "members", organizationId, page, filters],
     queryFn: ({ signal }) =>
-      organizationMembersApi.list(organizationId, page, 20, signal),
+      organizationMembersApi.list(organizationId, page, 20, signal, filters),
     staleTime: 0,
   });
 }

@@ -40,3 +40,8 @@ export interface PaginatedOrganizationMembers {
   page: number;
   limit: number;
 }
+
+export interface OrganizationMemberFilters {
+  search?: string;
+  roleId?: string;
+}

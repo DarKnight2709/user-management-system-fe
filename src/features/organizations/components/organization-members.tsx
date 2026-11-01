@@ -10,6 +10,8 @@ import {
 import { OrganizationMembersTable } from "./organization-members-table";
 import { MemberRoleEditor } from "@/features/roles/components/member-role-editor";
 import { useMemberActions } from "../hooks/use-member-actions";
+import { OrganizationMemberFiltersForm } from "./organization-member-filters";
+import type { OrganizationMemberFilters } from "../types";
 
 export function OrganizationMembers({
   organizationId,
@@ -21,8 +23,9 @@ export function OrganizationMembers({
   ownerId: string;
 }) {
   const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState<OrganizationMemberFilters>({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const members = useOrganizationMembers(organizationId, page);
+  const members = useOrganizationMembers(organizationId, page, filters);
   const remove = useRemoveOrganizationMember(organizationId);
   const { actor, canManageRoles, canRemove } = useMemberActions(
     organizationId,
@@ -41,6 +44,15 @@ export function OrganizationMembers({
           Danh sách thành viên đang hoạt động trong tổ chức.
         </p>
       </header>
+      <OrganizationMemberFiltersForm
+        organizationId={organizationId}
+        disabled={remove.isPending}
+        onApply={(next) => {
+          setFilters(next);
+          setPage(1);
+          setSelectedId(null);
+        }}
+      />
       {remove.isError && <ErrorNotice error={remove.error} />}
       {actor.isError && (
         <ErrorNotice
@@ -101,7 +113,9 @@ export function OrganizationMembers({
               />
               <p className="text-sm text-slate-500">
                 {members.data.total === 0
-                  ? "Chưa có thành viên đang hoạt động."
+                  ? filters.search || filters.roleId
+                    ? "Không có thành viên phù hợp với bộ lọc."
+                    : "Chưa có thành viên đang hoạt động."
                   : "Trang này không có thành viên."}
               </p>
               {page > 1 && (
