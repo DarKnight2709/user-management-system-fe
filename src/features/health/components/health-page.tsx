@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorNotice } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
 export function HealthPage() {
-  const { live, ready, greeting } = useHealth();
+  const { live, ready } = useHealth();
   return (
     <div className="mx-auto max-w-4xl space-y-7 p-6 sm:p-10">
       <header>
@@ -18,7 +18,6 @@ export function HealthPage() {
       {[
         { title: "Ứng dụng", query: live },
         { title: "PostgreSQL", query: ready },
-        { title: "Lời chào API", query: greeting },
       ].map(({ title, query }) => (
         <section className="panel" key={title}>
           <h2 className="mb-4 font-semibold">{title}</h2>
