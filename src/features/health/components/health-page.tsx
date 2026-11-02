@@ -31,11 +31,7 @@ export function HealthPage() {
               }}
             />
           ) : (
-            <p className="text-sm text-emerald-700">
-              {typeof query.data === "string"
-                ? query.data
-                : "Hoạt động bình thường"}
-            </p>
+            <p className="text-sm text-emerald-700">Hoạt động bình thường</p>
           )}
         </section>
       ))}

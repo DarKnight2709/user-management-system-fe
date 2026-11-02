@@ -13,9 +13,5 @@ export function useHealth() {
     queryFn: async () =>
       (await api.get<ApiResponse<Readiness>>("/health/ready")).data.data,
   });
-  const greeting = useQuery({
-    queryKey: ["health", "greeting"],
-    queryFn: async () => (await api.get<ApiResponse<string>>("/")).data.data,
-  });
-  return { live, ready, greeting };
+  return { live, ready };
 }

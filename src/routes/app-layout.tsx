@@ -22,6 +22,7 @@ export function AppLayout({ area }: { area: "admin" | "user" }) {
     ? [
         { to: "/admin", label: "Dashboard quản trị", icon: LayoutDashboard },
         { to: "/admin/users", label: "Quản lý người dùng", icon: Users },
+        { to: "/admin/organizations", label: "Quản lý tổ chức", icon: Building2 },
         { to: "/admin/audit-logs", label: "Nhật ký hệ thống", icon: ScrollText },
         { to: "/admin/health", label: "Trạng thái API", icon: Activity },
         { to: "/admin/profile", label: "Hồ sơ quản trị viên", icon: UserRound },
